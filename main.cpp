@@ -35,7 +35,7 @@ public:
     friend istream &operator>>(istream &in, Caracter &c);
 };
 
-istream  &operator>>(istream &in,  Caracter &c) {
+istream  &operator>>(istream &in, Caracter &c) {
     cout << "Caracterul este: " ;
     in >> c.nume;
     cout << "Caracterul are movement-ul: ";
@@ -93,6 +93,51 @@ istream  &operator>>(istream &in, Obstacol &obs) {
     return in;
 }
 
+class Scoreboard {
+private:
+    string nume;
+    int score;
+
+public:
+    ~Scoreboard(){cout<<"A fost apelat \n";}
+    explicit Scoreboard(const string& name = "Player1", const int& scor = 0) {
+        this->nume = name;
+        this->score = scor;
+    }
+
+    [[nodiscard]] string getnume() const {
+        return this->nume;
+    }
+
+    void setnume(const string &name) {
+        this->nume = name;
+    }
+
+    [[nodiscard]] int getscore() const {
+        return this->score;
+    }
+
+    void setscore(const int &scor) {
+        this->score = scor;
+    }
+
+    friend ostream &operator<<(ostream &out, const Scoreboard &sb);
+    friend istream &operator>>(istream &in, Scoreboard &sb);
+};
+
+istream  &operator>>(istream &in, Scoreboard &sb) {
+    cout << "Nume: " ;
+    in >> sb.nume;
+    cout << "Score: ";
+    in >> sb.score;
+    return in;
+}
+ostream &operator<<(ostream &out, const Scoreboard &sb) {
+    out << "Nume: " << sb.nume << endl;
+    out << "Score: " << sb.score << endl;
+    return out;
+}
+
 int main() {
 
     Caracter c1("Fork", 1);
@@ -108,8 +153,16 @@ int main() {
     Obstacol obs2;
     obs2.setlungime(3);
     obs2.setlatime(4);
-    cout << "Lungimea obstacolului este : "<< obs2.getlungime()<< "\n";
-    cout << "Latimea obstacolului este: "<< obs2.getlatime()<<"\n";
+    cout << "Lungimea obstacolului este : " << obs2.getlungime()<< "\n";
+    cout << "Latimea obstacolului este: " << obs2.getlatime()<<"\n";
+
+    Scoreboard sb1("Max", 30);
+    cout << sb1;
+    Scoreboard sb2;
+    sb2.setnume("Alex");
+    sb2.setscore(2);
+    cout << "Nume: " << sb2.getnume() << " \n";
+    cout << "Score: " << sb2.getscore() << " \n";
 
     return 0;
 }

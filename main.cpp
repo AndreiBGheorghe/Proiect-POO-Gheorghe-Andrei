@@ -6,6 +6,7 @@
 #include "headers/Hole.h"
 #include "headers/Spike.h"
 #include "headers/Normal.h"
+#include "headers/NegativeNr.h"
 #include <memory>
 #include <vector>
 
@@ -32,6 +33,9 @@ int main() {
     std::cout << "Lungime: " << obs2.getlength()<< "\n";
     std::cout << "Puncte: " << obs2.getpoints()<<"\n\n";
 
+    /*Obstacle* clona = obs2.clone();
+    std::cout << clona;*/
+
     Scoreboard sb1("Max", 30);
     std::cout << sb1;
     Scoreboard::valid_name(sb1.getname());
@@ -55,7 +59,14 @@ int main() {
 
     Normal n1;
     n1.citirenormal();
-    n1.afisarenormal();
+    try {
+        if (n1.getheight() < 0) {
+            throw NegativeNr();
+        }
+        std::cout << "Numarul introdus este: " << n1.getheight() << std::endl;
+    } catch (const NegativeNr& e) {
+        std::cerr << "Exceptie: " << e.what() << std::endl;
+    }
 
     ob.push_back(h);
     ob.push_back(sp);

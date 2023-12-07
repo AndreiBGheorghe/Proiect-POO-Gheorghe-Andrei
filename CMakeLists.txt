@@ -103,6 +103,7 @@ add_executable(${PROJECT_NAME} main.cpp
         src/Spike.cpp
         headers/Normal.h
         src/Normal.cpp
+        headers/NegativeNr.h
 )
 
 ###############################################################################

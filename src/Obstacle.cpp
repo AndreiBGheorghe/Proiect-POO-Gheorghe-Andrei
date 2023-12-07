@@ -32,6 +32,10 @@
         std::cout << "Puncte: " << points <<"\n";
     }
 
+    Obstacle* Obstacle::clone() const {
+        return new Obstacle(*this);
+    }
+
     std::ostream &operator<<(std::ostream &out, const Obstacle &obs) {
         out << "Lungime: " << obs.length << std::endl;
         out << "Puncte: " << obs.points << std::endl;

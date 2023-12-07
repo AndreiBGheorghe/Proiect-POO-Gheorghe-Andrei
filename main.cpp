@@ -59,14 +59,14 @@ int main() {
 
     Normal n1;
     n1.citirenormal();
-    try {
+    /*try {
         if (n1.getheight() < 0) {
             throw NegativeNr();
         }
         std::cout << "Numarul introdus este: " << n1.getheight() << std::endl;
     } catch (const NegativeNr& e) {
         std::cerr << "Exceptie: " << e.what() << std::endl;
-    }
+    }*/
 
     ob.push_back(h);
     ob.push_back(sp);

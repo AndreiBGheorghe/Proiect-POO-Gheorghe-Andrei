@@ -1,76 +1,171 @@
-#include <iostream>
-#include <string>
-#include "headers/Character.h"
 #include "headers/Obstacle.h"
-#include "headers/Scoreboard.h"
-#include "headers/Hole.h"
-#include "headers/Spike.h"
-#include "headers/Normal.h"
-#include "headers/NegativeNr.h"
-#include <memory>
+#include <string>
+#include <SFML/Graphics.hpp>
 #include <vector>
-
-std::vector<std::shared_ptr<Obstacle>> ob;
-std::shared_ptr<Hole> h = std::make_shared<Hole>(2,2,2);
-std::shared_ptr<Spike> sp = std::make_shared<Spike>();
-std::shared_ptr<Normal> nm = std::make_shared<Normal>();
+#include <cstdlib>
+#include <ctime>
 
 int main() {
+    // Crearea ferestrei de joc
+    sf::RenderWindow window(sf::VideoMode(1800, 800), "JumpStick");
 
-    Character c1("Fork", 1);
-    std::cout << c1;
-    Character c2;
-    c2.setname("Knife");
-    c2.setstate(2);
-    std::cout << "Caracter: " << c2.getname() << " \n";
-    std::cout << "Status: " << c2.getstate() << " \n\n";
+    // Inițializarea texturilor
+    sf::Texture MeatTexture, KnifeTexture, BackgroundTexture, ForkTexture;
 
-    Obstacle obs1(1,1);
-    std::cout << obs1;
-    Obstacle obs2;
-    obs2.setlength(3);
-    obs2.setpoints(4);
-    std::cout << "Lungime: " << obs2.getlength()<< "\n";
-    std::cout << "Puncte: " << obs2.getpoints()<<"\n\n";
+    if (!MeatTexture.loadFromFile("meat.png") ||
+        !KnifeTexture.loadFromFile("knife.png") ||
+        !ForkTexture.loadFromFile("fork.png") ||
+        !BackgroundTexture.loadFromFile("background.jpg")) {
+        return EXIT_FAILURE;
+    }
 
-    /*Obstacle* clona = obs2.clone();
-    std::cout << clona;*/
+    sf::Sprite meat(MeatTexture);
+    meat.setPosition(300, 700);
 
-    Scoreboard sb1("Max", 30);
-    std::cout << sb1;
-    Scoreboard::valid_name(sb1.getname());
-    Scoreboard sb2;
-    sb2.setname("Alex");
-    sb2.setscore(2);
-    std::cout << "Nume: " << sb2.getname() << " \n";
-    std::cout << "Score: " << sb2.getscore() << " \n";
-    Scoreboard::valid_name(sb2.getname());
+    // Variabile pentru fizica jocului
+    float gravity = 0.5f;
+    float jumpSpeed = 21.0f;
+    float meatSpeed = 0.0f;
 
+    sf::Sprite knife(KnifeTexture);
+    sf::Sprite fork(ForkTexture);
+    knife.setPosition(1800, 500);
 
-    Hole h1;
-    h1.citirehole();
-    h1.afisarehole();
+    float obstacleSpeed = 10.0f; // Viteză de deplasare a obstacolelor
+    int score = 0;
 
-    Spike sp1;
-    sp1.citirespike();
-    sp1.afisarespike();
-    sp1.directionstate(c1.getstate());
-    sp1.afisarespike();
+    // Inițializarea fontului pentru text
+    sf::Font font;
+    if (!font.loadFromFile("font.ttf")) {
+        return EXIT_FAILURE;
+    }
 
-    Normal n1;
-    n1.citirenormal();
-    /*try {
-        if (n1.getheight() < 0) {
-            throw NegativeNr();
+    // Inițializarea textului pentru scor
+    sf::Text scoreText;
+    scoreText.setFont(font);
+    scoreText.setCharacterSize(40);
+    scoreText.setFillColor(sf::Color::Red);
+    scoreText.setPosition(10, 10);
+
+    // Inițializarea textului pentru "Game Over"
+    sf::Text gameOverText;
+    gameOverText.setFont(font);
+    gameOverText.setCharacterSize(60);
+    gameOverText.setFillColor(sf::Color::Red);
+    gameOverText.setString("Game Over");
+    gameOverText.setPosition((window.getSize().x - gameOverText.getGlobalBounds().width) / 2,
+                             (window.getSize().y - gameOverText.getGlobalBounds().height) / 2);
+
+    // Inițializarea textului pentru scorul final
+    sf::Text finalScoreText;
+    finalScoreText.setFont(font);
+    finalScoreText.setCharacterSize(30);
+    finalScoreText.setFillColor(sf::Color::White);
+
+    // Inițializarea unui ceas pentru măsurarea timpului
+    sf::Clock clock;
+
+    // Variabile de control ale jocului
+    bool jumped = false;
+    bool gameOver = false;
+
+    sf::Sprite background(BackgroundTexture);
+
+    // Inițializarea generatorului de numere aleatoare
+    srand(static_cast<unsigned>(time(0)));
+
+    const int minObstacleDistance = 800; // Durata minimă între spawn-uri de obstacole
+    int obstacleSpawnTimer = minObstacleDistance;
+    std::vector<Obstacle> obstacles;
+
+    // Bucla principală a jocului
+    while (window.isOpen()) {
+        // Verificarea evenimentelor (de exemplu, închiderea ferestrei)
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                window.close();
         }
-        std::cout << "Numarul introdus este: " << n1.getheight() << std::endl;
-    } catch (const NegativeNr& e) {
-        std::cerr << "Exceptie: " << e.what() << std::endl;
-    }*/
 
-    ob.push_back(h);
-    ob.push_back(sp);
-    ob.push_back(nm);
+        // Măsurarea timpului scurs de la ultima buclă
+        sf::Time elapsed = clock.restart();
+        if (!gameOver) {
+            // Verificarea apăsării tastei
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && !jumped) {
+                meatSpeed = -jumpSpeed;
+                jumped = true;
+            }
+
+            // Aplicarea efectelor gravitaționale asupra personajului
+            meatSpeed += gravity;
+            meat.move(0, meatSpeed);
+
+            // Verificarea și spawn-ul alternativ al cuțitului și furculiței
+            if (obstacleSpawnTimer >= minObstacleDistance) {
+                if (rand() % 2 == 0) {
+                    fork.setPosition(1800, 300);
+                    obstacles.emplace_back(ForkTexture, window.getSize().x + minObstacleDistance, 300, obstacleSpeed);
+                } else {
+                    knife.setPosition(1800, 500);
+                    obstacles.emplace_back(KnifeTexture, window.getSize().x + minObstacleDistance, 500, obstacleSpeed);
+                }
+                jumped = false;
+                score++;
+                obstacleSpawnTimer = 0;
+            }
+
+            // Deplasarea și verificarea coliziunilor pentru obstacole
+            for (auto& obstacle : obstacles) {
+                obstacle.move();
+                if (meat.getGlobalBounds().intersects(obstacle.getSprite().getGlobalBounds())) {
+                    gameOver = true;
+                    finalScoreText.setString("Score: " + std::to_string(score));
+                    finalScoreText.setPosition((window.getSize().x - finalScoreText.getGlobalBounds().width) / 2,
+                                               (window.getSize().y - finalScoreText.getGlobalBounds().height) / 2 +
+                                               gameOverText.getGlobalBounds().height + 20);
+                }
+            }
+
+            // Eliminarea obstacolelor care au ieșit din ecran
+            obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(),
+                                           [&](const Obstacle& obstacle) {
+                                               return obstacle.getSprite().getPosition().x < -obstacle.getSprite().getGlobalBounds().width;
+                                           }),
+                            obstacles.end());
+
+            // Actualizarea temporizatorului pentru spawn-ul obstacolelor
+            obstacleSpawnTimer += elapsed.asMilliseconds();
+
+            // Actualizarea textului pentru scor
+            scoreText.setString("Score: " + std::to_string(score));
+
+            // Verificarea dacă personajul a atins podeaua
+            if (meat.getPosition().y > window.getSize().y - meat.getGlobalBounds().height) {
+                meat.setPosition(meat.getPosition().x, window.getSize().y - meat.getGlobalBounds().height);
+                meatSpeed = 0;
+                jumped = false;
+            }
+        }
+
+        window.draw(background);
+
+        // Desenarea elementelor pe ecran
+        if (!gameOver) {
+            window.draw(meat);
+            window.draw(knife);
+            window.draw(fork);
+            for (const auto& obstacle : obstacles) {
+                window.draw(obstacle.getSprite());
+            }
+            window.draw(scoreText);
+        } else {
+            window.draw(gameOverText);
+            window.draw(finalScoreText);
+        }
+
+        window.display();
+        sf::sleep(sf::milliseconds(20) - elapsed);
+    }
 
     return 0;
 }

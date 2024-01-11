@@ -1,51 +1,16 @@
-#include<iostream>
+#include<SFML/Graphics.hpp>
 #include"../headers/Obstacle.h"
 
-    Obstacle::~Obstacle()=default;
-    Obstacle::Obstacle(const int& local_length, const int& local_points) {
-        this->length = local_length;
-        this->points = local_points;
+    Obstacle::Obstacle(sf::Texture& texture, float x, float y, float speed)
+            : speed(speed) {
+        sprite.setTexture(texture);
+        sprite.setPosition(x, y);
     }
 
-    [[nodiscard]] int Obstacle::getlength() const {
-        return this->length;
-    }
-    void Obstacle::setlength(int local_length) {
-        this->length = local_length;
+    void Obstacle::move() {
+        sprite.move(-speed, 0);
     }
 
-    [[nodiscard]] int Obstacle::getpoints() const {
-        return this->points;
-    }
-    void Obstacle::setpoints(int local_points) {
-        this->points = local_points;
-    }
-
-    void Obstacle::citire(){
-        std::cout<<"Lungime:";
-        std::cin>> length;
-        std::cout<<"Puncte:";
-        std::cin>> points;
-    }
-    void Obstacle::afisare(){
-        std::cout << "Lungime: " << length << "\n";
-        std::cout << "Puncte: " << points <<"\n";
-    }
-
-    Obstacle* Obstacle::clone() const {
-        return new Obstacle(*this);
-    }
-
-    std::ostream &operator<<(std::ostream &out, const Obstacle &obs) {
-        out << "Lungime: " << obs.length << std::endl;
-        out << "Puncte: " << obs.points << std::endl;
-        return out;
-    }
-
-    std::istream  &operator>>(std::istream &in, Obstacle &obs) {
-        std::cout << "Lungime: " ;
-        in >> obs.length;
-        std::cout << "Puncte: ";
-        in >> obs.points;
-        return in;
+    const sf::Sprite& Obstacle::getSprite() const {
+        return sprite;
     }

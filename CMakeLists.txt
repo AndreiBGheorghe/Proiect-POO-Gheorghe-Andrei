@@ -92,18 +92,7 @@ endfunction()
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
 add_executable(${PROJECT_NAME} main.cpp
         headers/Obstacle.h
-        headers/Scoreboard.h
-        src/Character.cpp
-        headers/Character.h
         src/Obstacle.cpp
-        src/Scoreboard.cpp
-        headers/Hole.h
-        src/Hole.cpp
-        headers/Spike.h
-        src/Spike.cpp
-        headers/Normal.h
-        src/Normal.cpp
-        headers/NegativeNr.h
 )
 
 ###############################################################################
@@ -149,3 +138,10 @@ set_custom_stdlib_and_sanitizers(${PROJECT_NAME} true)
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 # install(DIRECTORY some_dir1 some_dir2 DESTINATION bin)
 # install(FILES some_file1.txt some_file2.md DESTINATION bin)
+
+set(SFML_STATIC_LIBRARIES TRUE)
+set(SFML_DIR C:/SFML/lib/cmake/SFML)
+find_package(SFML COMPONENTS system window graphics audio network REQUIRED)
+
+include_directories(C:/SFML/include/SFML)
+target_link_libraries(oop sfml-system sfml-window sfml-graphics sfml-audio)

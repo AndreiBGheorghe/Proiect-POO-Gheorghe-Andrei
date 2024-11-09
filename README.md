@@ -2,7 +2,7 @@
 
 ### Tema 0
 
-- [ ] Nume proiect (poate fi schimbat ulterior)
+- [ ] Nume proiect
 - [ ] Scurtă descriere a temei alese, ce v-ați propus să implementați
 
 ## Tema 1
